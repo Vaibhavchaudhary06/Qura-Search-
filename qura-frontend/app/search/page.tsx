@@ -1,8 +1,10 @@
 "use client";
+
+import { Suspense } from 'react';
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { Search, Video, ShoppingBag, X, Play, Mic, MapPin, ChevronDown, ChevronUp, Calendar, User, Eye } from "lucide-react";
-import { Suspense } from 'react';
+
 // ─── QUICK APPS DATA ──────────────────────────────────────────────────────────
 const QUICK_APPS = [
   { id: "meet", name: "Qura Meet", icon: "/icons/meet.svg", href: "https://qura-meetcom.vercel.app/" },
@@ -215,7 +217,7 @@ function PeopleAlsoAsk({ query, onSearch }: { query: string; onSearch: (q: strin
   useEffect(() => {
     if (!query) return;
     setLoading(true);
-    fetch(`http://127.0.0.1:8000/related-questions?q=${encodeURIComponent(query)}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/related-questions?q=${encodeURIComponent(query)}`)
       .then(res => res.json())
       .then(data => {
         setQuestions(data.questions || []);
@@ -288,7 +290,7 @@ function LocationNews({ lat, lon }: { lat?: number; lon?: number }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let url = "http://127.0.0.1:8000/location-news";
+    let url = `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/location-news`;
     if (lat && lon) {
       url += `?lat=${lat}&lon=${lon}`;
     }
@@ -328,7 +330,7 @@ function PopularSearches({ query, onSearch }: { query: string; onSearch: (q: str
 
   useEffect(() => {
     if (!query) return;
-    fetch(`http://127.0.0.1:8000/popular-searches?q=${encodeURIComponent(query)}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/popular-searches?q=${encodeURIComponent(query)}`)
       .then(res => res.json())
       .then(data => setSearches(data.searches || []))
       .catch(() => setSearches([]));
@@ -1205,8 +1207,8 @@ function AiAnswerCard({ insight, sources, query }: { insight: string; sources?: 
   );
 }
 
-// ─── MAIN PAGE ────────────────────────────────────────────────────────────────
-export default function SearchResults() {
+// ─── MAIN SEARCH RESULTS COMPONENT ────────────────────────────────────────────
+function SearchResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const query = searchParams.get("q");
@@ -1230,9 +1232,11 @@ export default function SearchResults() {
   const [longitude, setLongitude] = useState<number | undefined>(undefined);
   const searchRef = useRef<HTMLDivElement>(null);
 
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+
   // ─── FETCH QUICK LINKS ──────────────────────────────────────────────────────
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/quick-links')
+    fetch(`${API_BASE}/quick-links`)
       .then(res => res.json())
       .then(data => {
         setQuickLinks(data);
@@ -1270,7 +1274,7 @@ export default function SearchResults() {
     const t = setTimeout(async () => {
       if (searchInput.length > 2) {
         try {
-          const res = await fetch(`http://127.0.0.1:8000/suggest?q=${encodeURIComponent(searchInput)}`);
+          const res = await fetch(`${API_BASE}/suggest?q=${encodeURIComponent(searchInput)}`);
           if (res.ok) { const d = await res.json(); setSuggestions(Array.isArray(d) ? d : []); setShowSuggestions(true); }
           else { setSuggestions([]); setShowSuggestions(false); }
         } catch { setSuggestions([]); setShowSuggestions(false); }
@@ -1326,7 +1330,7 @@ export default function SearchResults() {
     setLoading(true);
     try {
       const apiType = tabName === "EraA" ? "all" : tabToApiType[tabName] || "all";
-      const res = await fetch(`http://127.0.0.1:8000/search?q=${query}&type=${apiType}&page=${page}`);
+      const res = await fetch(`${API_BASE}/search?q=${query}&type=${apiType}&page=${page}`);
       const result = await res.json();
       setData({ ...result, search_type: apiType });
     } catch (err) { console.error(err); }
@@ -1991,5 +1995,28 @@ export default function SearchResults() {
         </div>
       </footer>
     </div>
+  );
+}
+
+// ─── MAIN EXPORT WITH SUSPENSE (FIX FOR VERCEL) ──────────────────────────────
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ 
+        minHeight: "100vh", 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center",
+        background: "#FFFFFF",
+        fontFamily: "'Segoe UI', Arial, sans-serif"
+      }}>
+        <div style={{ textAlign: "center" }}>
+          <div className="shimmer" style={{ width: "60px", height: "60px", borderRadius: "50%", margin: "0 auto 20px" }} />
+          <p style={{ color: "#4D5156" }}>Loading Qura Search...</p>
+        </div>
+      </div>
+    }>
+      <SearchResultsContent />
+    </Suspense>
   );
 }

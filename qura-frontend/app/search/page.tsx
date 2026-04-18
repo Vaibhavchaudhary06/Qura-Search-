@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { Search, Video, ShoppingBag, X, Play, Mic, MapPin, ChevronDown, ChevronUp, Calendar, User, Eye } from "lucide-react";
 
+export const dynamic = "force-dynamic";
 // ─── QUICK APPS DATA ──────────────────────────────────────────────────────────
 const QUICK_APPS = [
   { id: "meet", name: "Qura Meet", icon: "/icons/meet.svg", href: "https://qura-meetcom.vercel.app/" },

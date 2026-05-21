@@ -1349,7 +1349,7 @@ function SearchResultsContent() {
       }
     } catch (err) { 
       console.error(err);
-      setData({ results: [], eraa_insight: "", sources: [], search_type: apiType });
+      setData({ results: [], eraa_insight: "", sources: [], search_type: "all" });
     }
     setLoading(false);
   };

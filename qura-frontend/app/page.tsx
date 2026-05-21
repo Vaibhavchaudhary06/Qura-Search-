@@ -21,7 +21,7 @@ interface TrendingItem {
 const QUICK_APPS: QuickApp[] = [
   { id: "maps", name: "Qura Meet", icon: "/icons/meet.svg", href: "https://qura-meetcom.vercel.app/", color: "#0d6efd" },
   { id: "news", name: "Qura Calendar", icon: "/icons/calendar.png", href: "https://qura-calendar-ten.vercel.app/", color: "#dc3545" },
-  { id: "shopping", name: "EraA", icon: "/icons/eraa.png", href: "https://v0-qura-eraa.vercel.app/", color: "#fd7e14" },
+  { id: "shopping", name: "EraA", icon: "/icons/eraa.png", href: "https://eraa.quratechnologis.me/", color: "#fd7e14" },
   { id: "images", name: "Laxora", icon: "/icons/laxora.png", href: "#", color: "#6f42c1" },
   { id: "videos", name: "Qura Design Studio", icon: "/icons/design.png", href: "https://qura-design-studio.vercel.app/", color: "#d63384" },
 ];

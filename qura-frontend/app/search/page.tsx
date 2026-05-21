@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 const QUICK_APPS = [
   { id: "meet", name: "Qura Meet", icon: "/icons/meet.svg", href: "https://qura-meetcom.vercel.app/" },
   { id: "calendar", name: "Qura Calendar", icon: "/icons/calendar.png", href: "https://qura-calendar-ten.vercel.app/" },
-  { id: "eraa", name: "EraA", icon: "/icons/eraa.png", href: "https://v0-qura-eraa.vercel.app/" },
+  { id: "eraa", name: "EraA", icon: "/icons/eraa.png", href: "https://eraa.quratechnologis.me" },
   { id: "laxora", name: "Laxora", icon: "/icons/laxora.png", href: "#" },
   { id: "design", name: "Design Studio", icon: "/icons/design.png", href: "https://qura-design-studio.vercel.app/" },
 ];
@@ -291,7 +291,7 @@ function LocationNews({ lat, lon }: { lat?: number; lon?: number }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let url = `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/location-news`;
+    let url = `${process.env.NEXT_PUBLIC_API_URL || 'http://3.109.4.106:8000'}/location-news`;
     if (lat && lon) {
       url += `?lat=${lat}&lon=${lon}`;
     }
@@ -1233,7 +1233,7 @@ function SearchResultsContent() {
   const [longitude, setLongitude] = useState<number | undefined>(undefined);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://3.109.4.106:8000';
 
   // ─── FETCH QUICK LINKS ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -1331,10 +1331,26 @@ function SearchResultsContent() {
     setLoading(true);
     try {
       const apiType = tabName === "EraA" ? "all" : tabToApiType[tabName] || "all";
-      const res = await fetch(`${API_BASE}/search?q=${query}&type=${apiType}&page=${page}`);
-      const result = await res.json();
-      setData({ ...result, search_type: apiType });
-    } catch (err) { console.error(err); }
+      const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&type=${apiType}&page=${page}`);
+      
+      if (res.ok) {
+        const result = await res.json();
+        // 🔥 FIX: Agar backend se direct array aa raha ho ya nested field, dono handle ho jayein
+        const formattedResults = Array.isArray(result) ? result : (result.results || result.data || []);
+        
+        setData({
+          results: formattedResults,
+          eraa_insight: result.eraa_insight || result.insight || "",
+          sources: result.sources || [],
+          search_type: apiType
+        });
+      } else {
+        setData({ results: [], eraa_insight: "", sources: [], search_type: apiType });
+      }
+    } catch (err) { 
+      console.error(err);
+      setData({ results: [], eraa_insight: "", sources: [], search_type: apiType });
+    }
     setLoading(false);
   };
 
@@ -1342,7 +1358,7 @@ function SearchResultsContent() {
     setActiveTab(t);
     setCurrentPage(1);
     if (t === "EraA") {
-      window.open("https://era-a.vercel.app/", "_blank");
+      window.open("https://eraa.quratechnologis.me/", "_blank");
     } else {
       fetchResults(t, 1);
     }
@@ -1405,7 +1421,7 @@ function SearchResultsContent() {
   ];
 
   const getPaginatedResults = () => {
-    if (!data?.results) return [];
+    if (!data || !Array.isArray(data.results)) return [];
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return data.results.slice(start, end);

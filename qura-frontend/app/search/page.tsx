@@ -218,7 +218,7 @@ function PeopleAlsoAsk({ query, onSearch }: { query: string; onSearch: (q: strin
   useEffect(() => {
     if (!query) return;
     setLoading(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/related-questions?q=${encodeURIComponent(query)}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.quratechnologis.me:8080'}/related-questions?q=${encodeURIComponent(query)}`)
       .then(res => res.json())
       .then(data => {
         setQuestions(data.questions || []);

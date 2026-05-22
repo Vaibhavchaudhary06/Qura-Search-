@@ -93,9 +93,9 @@ async def search_supabase_index(query: str, limit: int = 50) -> List[Dict]:
         # Your table has: id, created_at, url, title, content, type, priority
         # Using ILIKE for text search (works with your current data)
         response = supabase.table('search_index')\
-            .select("id, url, title, content, type, priority, created_at")\
+            .select("id, url, title, type, priority, created_at")\
             .ilike('title', f'%{query}%')\
-            .limit(limit)\
+            .limit(10)\
             .execute()
         
         if response.data:
